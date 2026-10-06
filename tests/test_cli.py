@@ -3,9 +3,9 @@ from typing import ClassVar
 
 import pytest
 
-from agilexrobotics import cli
-from agilexrobotics.driver import ArmErrorFlags, PiperXState
-from agilexrobotics.reader import PiperXSnapshot
+from agilex_sdk_python import cli
+from agilex_sdk_python.driver import ArmErrorFlags, PiperXState
+from agilex_sdk_python.reader import PiperXSnapshot
 
 
 class FakeConnection:

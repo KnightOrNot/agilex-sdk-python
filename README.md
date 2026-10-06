@@ -1,6 +1,8 @@
-# agilexrobotics
+# agilex-sdk-python
 
-`agilexrobotics` 是面向 AgileX PiPER-X 机械臂的 Python 控制项目，提供 SocketCAN 通信、状态读取、基础运动与夹爪控制，以及供 GELLO 遥操作程序调用的 ZMQ 服务。项目提供两个命令入口：`ag` 用于机械臂调试和控制，`ag-gello-server` 用于启动跟随 GELLO 控制服务。
+仓库及安装包名称为 `agilex-sdk-python`，Python 导入包为 `agilex_sdk_python`。命令入口：`agilex-sdk-python`、`agilex-sdk-python-server`（兼容短命令 `ag`、`ag-gello-server`）。
+
+`agilex-sdk-python` 是面向 AgileX PiPER-X 机械臂的 Python 控制项目，提供 SocketCAN 通信、状态读取、基础运动与夹爪控制，以及供 GELLO 遥操作程序调用的 ZMQ 服务。项目提供两个命令入口：`agilex-sdk-python` 用于机械臂调试和控制，`agilex-sdk-python-server` 用于启动跟随 GELLO 控制服务。
 
 > **[!WARNING]** 
 > 
@@ -33,15 +35,15 @@ sudo apt install -y git curl iproute2
 使用 SSH clone 项目：
 
 ```bash
-git clone git@github.com:right-or-not/agilexrobotics.git
-cd agilexrobotics
+git clone git@github.com:KnightOrNot/agilex-sdk-python.git
+cd agilex-sdk-python
 ```
 
 未配置 GitHub SSH 密钥时可使用 HTTPS：
 
 ```bash
-git clone https://github.com/right-or-not/agilexrobotics.git
-cd agilexrobotics
+git clone https://github.com/KnightOrNot/agilex-sdk-python.git
+cd agilex-sdk-python
 ```
 
 ### 3. 安装 pyenv、uv 和项目依赖
@@ -106,14 +108,14 @@ ip -details -statistics link show can0
 先读取综合状态，该命令不会使能或移动机械臂：
 
 ```bash
-uv run ag status
+uv run agilex-sdk-python status
 ```
 
 正常通信时，输出中的 `connected` 和 `communication_ok` 应为 `true`。继续检查关节角和固件信息：
 
 ```bash
-uv run ag joints
-uv run ag firmware
+uv run agilex-sdk-python joints
+uv run agilex-sdk-python firmware
 ```
 
 如果 `connected` 为 `true` 但 `communication_ok` 为 `false`，通常表示软件已打开 CAN 接口但尚未收到完整反馈；请检查机械臂电源、急停、CAN-H/CAN-L 接线、终端电阻和波特率，并观察 `ip -statistics link show can0` 中的 RX 计数是否增长。
@@ -125,10 +127,10 @@ uv run ag firmware
 完成 CAN 连通性验证后，可启动供 GELLO 客户端连接的本地 ZMQ 服务：
 
 ```bash
-uv run ag-gello-server --host 127.0.0.1 --port 6001 --hz 50
+uv run agilex-sdk-python-server --host 127.0.0.1 --port 6001 --hz 50
 ```
 
-`--hz` 限制 PiPER-X 关节命令的最大发送频率，默认值为 50 Hz。启动服务会进入硬件控制流程；完整的双终端连接步骤、参数含义和退出方式请参阅[开发与调试手册](docs/DEVELOPMENT.md#4-ag-gello-server-与-gello-跟随)。
+`--hz` 限制 PiPER-X 关节命令的最大发送频率，默认值为 50 Hz。启动服务会进入硬件控制流程；完整的双终端连接步骤、参数含义和退出方式请参阅[开发与调试手册](docs/DEVELOPMENT.md#4-agilex-sdk-python-server-与-gello-跟随)。
 
 ## （4）开发环境
 

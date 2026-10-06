@@ -10,9 +10,9 @@ import time
 from collections.abc import Sequence
 from typing import Any
 
-from agilexrobotics.driver import PiperXDriver
-from agilexrobotics.exceptions import PiperXError
-from agilexrobotics.reader import PiperXConnection
+from agilex_sdk_python.driver import PiperXDriver
+from agilex_sdk_python.exceptions import PiperXError
+from agilex_sdk_python.reader import PiperXConnection
 
 # 命令顺序与 README 保持一致：常用命令放在前面，便于帮助信息和源码检索。
 _COMMON_READ_COMMANDS = ("status", "joints")
@@ -64,12 +64,12 @@ _HARDWARE_TEST_MOTION_TIMEOUT = 10.0
 
 
 def _parser() -> argparse.ArgumentParser:
-    """创建并返回用于解析 `ag` 命令行参数的 parser。"""
+    """创建并返回用于解析 `agilex-sdk-python` 命令行参数的 parser。"""
 
     # 先定义程序名称和总体说明
-    # 用户执行 `ag --help` 时会看到这些内容。
+    # 用户执行 `agilex-sdk-python --help` 时会看到这些内容。
     parser = argparse.ArgumentParser(
-        prog="ag",
+        prog="agilex-sdk-python",
         description="AgileX PiPER-X diagnostics and guarded hardware checks.",
     )
     # command: 可选择 read commands、hardware commands and aliases
@@ -496,7 +496,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     # 将预期内的连接、协议和参数异常转成简洁错误信息及退出码 1。
     except (OSError, PiperXError, RuntimeError, ValueError) as exc:
-        print(f"agilexrobotics: {exc}", file=sys.stderr)
+        print(f"agilex-sdk-python: {exc}", file=sys.stderr)
         return 1
 
     # None 表示设备在超时时间内没有返回反馈，使用单独的退出码 2。

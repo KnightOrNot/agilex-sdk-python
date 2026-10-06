@@ -9,8 +9,8 @@ from typing import Any
 
 import numpy as np
 
-from agilexrobotics.driver import PiperXDriver
-from agilexrobotics.exceptions import FeedbackError
+from agilex_sdk_python.driver import PiperXDriver
+from agilex_sdk_python.exceptions import FeedbackError
 
 
 def _rpy_to_xyzw(roll: float, pitch: float, yaw: float) -> np.ndarray:
@@ -30,7 +30,7 @@ def _rpy_to_xyzw(roll: float, pitch: float, yaw: float) -> np.ndarray:
 
 
 class GelloPiperXRobot:
-    """Duck-typed implementation of ``gello.robots.robot.Robot``.
+    """Duck-typed implementation of ``agilex_gello_software.robots.robot.Robot``.
 
     适配器向 GELLO 暴露六个机械臂关节和一个归一化夹爪自由度。夹爪使用
     ``0=全闭、1=全开``，再正向映射到 AGX 夹爪的实际开口宽度。

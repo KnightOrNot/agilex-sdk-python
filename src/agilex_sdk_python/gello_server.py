@@ -11,8 +11,8 @@ from typing import Any
 
 import zmq
 
-from agilexrobotics.exceptions import PiperXError
-from agilexrobotics.gello_follower import GelloPiperXRobot
+from agilex_sdk_python.exceptions import PiperXError
+from agilex_sdk_python.gello_follower import GelloPiperXRobot
 
 
 def _dispatch(robot: GelloPiperXRobot, request: dict[str, Any]) -> Any:

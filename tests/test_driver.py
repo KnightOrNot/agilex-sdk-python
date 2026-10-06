@@ -5,8 +5,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from agilexrobotics.driver import PiperXDriver
-from agilexrobotics.exceptions import (
+from agilex_sdk_python.driver import PiperXDriver
+from agilex_sdk_python.exceptions import (
     ArmStateError,
     CommunicationError,
     FeedbackError,
