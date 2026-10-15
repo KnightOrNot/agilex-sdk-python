@@ -1,180 +1,74 @@
 # agilex-sdk-python
 
-仓库及安装包名称为 `agilex-sdk-python`，Python 导入包为 `agilex_sdk_python`。命令入口：`agilex-sdk-python`、`agilex-sdk-python-server`（兼容短命令 `ag`、`ag-gello-server`）。
+面向 AgileX PiPER-X 的 Python 硬件适配层，基于 pyAgxArm 与 SocketCAN，提供状态读取、运动/夹爪控制和七自由度 ZMQ Robot 服务。推荐 Python 3.11；包导入名为 `agilex_sdk_python`。
 
-`agilex-sdk-python` 是面向 AgileX PiPER-X 机械臂的 Python 控制项目，提供 SocketCAN 通信、状态读取、基础运动与夹爪控制，以及供 GELLO 遥操作程序调用的 ZMQ 服务。项目提供两个命令入口：`agilex-sdk-python` 用于机械臂调试和控制，`agilex-sdk-python-server` 用于启动跟随 GELLO 控制服务。
+GELLO 主手、应用配置、客户端组合、跟随与 raw 录制由 agilex-controller 管理；时间对齐与数据转换由 lerobot-converter 管理。SDK 可以独立调试机械臂，不依赖这两个应用。
 
-> **[!WARNING]** 
-> 
-> - 任何运动命令都可能造成机械臂、夹爪或周围物体损坏。首次使用前请固定机械臂底座、清空工作空间、确保急停按钮触手可及。建议先完成只读状态检查，再进行运动测试。
-> 
-> - 机械臂失能会导致机械臂从当前状态直接自由落体，可能对机械臂造成不可逆的影响。因此，建议失能前托住机械臂。
+## 职责与目录
 
-## （1）环境要求
-
-- Ubuntu 或其他支持 SocketCAN 的 Linux 系统
-- Python 3.11 或更高版本（当前项目使用 `.python-version` 固定为 3.11）
-- [Git](https://git-scm.com/) & [uv](https://docs.astral.sh/uv/getting-started/installation/)
-- `iproute2` 提供的 `ip` 命令
-- PiPER-X 机械臂、兼容的 USB-CAN 适配器和正确的 CAN 总线终端电阻
-- LInux 账户能够使用 `sudo` 配置网络接口
-
-## （2）快速开始
-
-### 1. 安装系统工具
-
-在 Ubuntu 上安装 Git、uv 安装脚本所需的 curl，以及配置 SocketCAN 所需的 iproute2：
-
-```bash
-sudo apt update
-sudo apt install -y git curl iproute2
+```text
+src/agilex_sdk_python/    只读连接、安全驱动、ZMQ 服务与 CLI
+scripts/config_can.sh    SocketCAN 配置工具
+tests/                   模拟 SDK 的无硬件回归
+docs/                    架构、安装、命令、配置与排障
 ```
 
-### 2. 获取项目
+## 安装与只读检查
 
-使用 SSH clone 项目：
-
-```bash
-git clone git@github.com:KnightOrNot/agilex-sdk-python.git
-cd agilex-sdk-python
-```
-
-未配置 GitHub SSH 密钥时可使用 HTTPS：
-
-```bash
-git clone https://github.com/KnightOrNot/agilex-sdk-python.git
-cd agilex-sdk-python
-```
-
-### 3. 安装 pyenv、uv 和项目依赖
-
-如果系统尚未安装 uv，可使用官方安装脚本：
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-source "$HOME/.local/bin/env"
-```
-
-若安装程序提示了不同的环境加载命令，请以终端提示为准；其他安装方式见 [uv 官方安装说明](https://docs.astral.sh/uv/getting-started/installation/)。安装完成后确认命令可用：
-
-```bash
-uv --version
-```
-
-Python 由 pyenv 安装和选择，uv 只负责创建 `.venv`、同步 `uv.lock` 和运行命令。若尚未安装 pyenv，请先按[pyenv 官方说明](https://github.com/pyenv/pyenv#installation)完成安装。项目的 `.python-version` 声明 Python 3.11；解析并安装当前 pyenv 支持的最新 3.11 补丁版本：
-
-```bash
-requested_version="$(<.python-version)"
-resolved_version="$(pyenv latest -k "$requested_version")"
-pyenv install -s "$resolved_version"
-interpreter="$(PYENV_VERSION="$resolved_version" pyenv which python)"
-UV_NO_MANAGED_PYTHON=1 uv sync --frozen --python "$interpreter"
-```
-
-显式的 `--python` 和 `UV_NO_MANAGED_PYTHON=1` 可以防止 uv 自行下载另一套 Python。通常不需要手动激活虚拟环境；后续使用 `uv run ...` 时，uv 会自动使用当前项目的 `.venv`。如需在编辑器或终端中显式激活，可执行：
-
-```bash
-source .venv/bin/activate
-```
-
-### 4. 连接并配置 CAN
-
-连接 USB-CAN 和 PiPER-X，给机械臂上电并释放急停。先确认系统已经创建 CAN 网络接口：
-
-```bash
-ip -brief link show can0
-```
-
-将 `can0` 配置为 PiPER-X 使用的 1 Mbit/s，并显示接口统计信息：
-
-```bash
-./scripts/config_can.sh
-```
-
-脚本会在必要时调用 `sudo`，并可安全地重复执行。默认参数依次为接口名（`interface`）、波特率（`bitrate`）和发送队列长度（`txqueuelen`）；使用其他配置时可显式传入：
-
-```bash
-./scripts/config_can.sh can0 1000000 100
-```
-
-再次检查接口状态：
-
-```bash
-ip -details -statistics link show can0
-```
-
-### 5. 进行只读连通性验证
-
-先读取综合状态，该命令不会使能或移动机械臂：
-
-```bash
-uv run agilex-sdk-python status
-```
-
-正常通信时，输出中的 `connected` 和 `communication_ok` 应为 `true`。继续检查关节角和固件信息：
-
-```bash
-uv run agilex-sdk-python joints
-uv run agilex-sdk-python firmware
-```
-
-如果 `connected` 为 `true` 但 `communication_ok` 为 `false`，通常表示软件已打开 CAN 接口但尚未收到完整反馈；请检查机械臂电源、急停、CAN-H/CAN-L 接线、终端电阻和波特率，并观察 `ip -statistics link show can0` 中的 RX 计数是否增长。
-
-至此，Python 环境、项目依赖和 PiPER-X 只读通信均已完成。运行任何运动命令前，请阅读[开发与调试手册](docs/DEVELOPMENT.md)中的安全说明和命令参数。
-
-## （3）GELLO 服务
-
-完成 CAN 连通性验证后，可启动供 GELLO 客户端连接的本地 ZMQ 服务：
-
-```bash
-uv run agilex-sdk-python-server --host 127.0.0.1 --port 6001 --hz 50
-```
-
-`--hz` 限制 PiPER-X 关节命令的最大发送频率，默认值为 50 Hz。启动服务会进入硬件控制流程；完整的双终端连接步骤、参数含义和退出方式请参阅[开发与调试手册](docs/DEVELOPMENT.md#4-agilex-sdk-python-server-与-gello-跟随)。
-
-## （4）开发环境
-
-`uv sync --frozen` 会同步锁文件中声明的开发依赖。常用质量检查命令如下：
-
-```bash
-uv run pytest
-uv run ruff check .
-uv run pyright
-```
-
-项目架构、源码职责、CLI 全部参数、硬件调试和 GELLO 联调方法统一记录在[开发与调试手册](docs/DEVELOPMENT.md)中。
-
-## （5）常见问题
-
-### 1. `uv sync` 无法拉取 `pyagxarm`
-
-`pyagxarm` 依赖通过 GitHub Git 仓库安装。请确认当前网络能够访问 GitHub，并且系统已安装 Git，然后重新执行：
+准备 Linux、Python 3.11、Git、uv 和 `iproute2`，在本仓库根目录执行：
 
 ```bash
 uv sync --frozen
+uv run agilex-sdk-python --help
 ```
 
-### 2. 找不到 `can0`
-
-先确认 USB-CAN 已被系统识别：
+连接设备后配置默认 CAN，并检查反馈：
 
 ```bash
-lsusb
-ip -brief link show
+./scripts/config_can.sh
+uv run agilex-sdk-python status
+uv run agilex-sdk-python joints
 ```
 
-若适配器使用 `gs_usb` 驱动，可尝试加载驱动后重新插拔设备：
+`status` 不使能或移动机械臂。确认 JSON 中 `connected`、`communication_ok` 为 `true`，并核对反馈；仅打开 CAN 接口不代表机械臂通信正常。完整安装及 pyenv 流程见[安装指南](docs/installation.md)。
+
+## ZMQ 服务与 controller
+
+以下服务会进入硬件控制流程：连接 CAN、默认写入并确认速度/加速度限制、使能机械臂。启动前固定底座、清空工作区并确认急停可用。
 
 ```bash
-sudo modprobe gs_usb
+uv run agilex-sdk-python-server
 ```
 
-### 3. CAN 接口是 UP，但收不到反馈
-
-接口处于 `UP` 仅表示本机 SocketCAN 已配置完成，不代表机械臂已经发送数据。使用以下命令观察 RX/TX 和 CAN 错误计数，同时检查机械臂供电、急停、接线、终端电阻及 1 Mbit/s 波特率：
+默认监听 `127.0.0.1:6001`，JS 命令最大发送频率为 50 Hz。服务不创建 GELLO 客户端、不记录 raw，也不负责应用退出回零。PiPER-X 的日常跟随与采集在 controller 根目录使用：
 
 ```bash
-ip -details -statistics link show can0
+./scripts/start_gello_follow.sh
+./scripts/start_data_record.sh
 ```
 
-更多诊断方法见[开发与调试手册](docs/DEVELOPMENT.md)。
+controller 默认管理 SDK 服务的启停，使用它时无需手动启动第二个服务。手动服务联调与协议说明见[架构文档](docs/index.md)。
+
+SDK 的 CLI 和服务默认没有交互式运动确认；兼容确认开关不增加保护。运动前阅读 [CLI 参考](docs/reference/cli.md)。关闭连接不会自动失能或回零；失能可能导致下坠，必须先支撑机械臂。
+
+## 开发与文档
+
+```bash
+uv run --frozen pytest
+uv run --frozen ruff check --isolated .
+uv run --frozen pyright
+uv build
+```
+
+测试注入模拟 SDK，不访问 CAN。真实设备验收需单独执行并记录。
+
+- [架构与 ZMQ 协议](docs/index.md)
+- [安装指南](docs/installation.md)
+- [CLI 参考](docs/reference/cli.md)
+- [配置参考](docs/reference/config.md)
+- [故障排查](docs/reference/errors.md)
+- [贡献指南](CONTRIBUTING.md)
+- [版本记录](CHANGELOG.md)
+- [许可状态](LICENSE)
+
+本仓库尚未选定项目级许可证；依赖保留各自许可，不能将依赖的许可视为本项目的许可。

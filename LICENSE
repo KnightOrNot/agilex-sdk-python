@@ -1,0 +1,9 @@
+Project-wide license status
+
+No project-wide license has been selected for newly authored agilex-sdk-python
+code. This file does not grant additional rights to that code.
+
+Third-party dependencies and incorporated components retain their own licenses.
+In particular, pyAgxArm is a separate upstream project; its license is not a
+project-wide license for this repository. Preserve applicable upstream notices
+when redistributing third-party material.
