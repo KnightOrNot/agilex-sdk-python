@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-
 from agilex_sdk_python.driver import ArmErrorFlags, PiperXState
 from agilex_sdk_python.exceptions import FeedbackError
 from agilex_sdk_python.gello_follower import GelloPiperXRobot

@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from types import SimpleNamespace
 
 import pytest
-
 from agilex_sdk_python.driver import PiperXDriver
 from agilex_sdk_python.exceptions import (
     ArmStateError,

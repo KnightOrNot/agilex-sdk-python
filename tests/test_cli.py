@@ -2,7 +2,6 @@ import math
 from typing import ClassVar
 
 import pytest
-
 from agilex_sdk_python import cli
 from agilex_sdk_python.driver import ArmErrorFlags, PiperXState
 from agilex_sdk_python.reader import PiperXSnapshot
