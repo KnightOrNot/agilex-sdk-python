@@ -1,5 +1,7 @@
 # agilex-sdk-python
 
+所有开发与运行环境统一由 uv 管理：按 `.python-version` 选择 Python，使用本项目 `.venv`，依赖按 `uv.lock` 同步。
+
 仓库及安装包名称为 `agilex-sdk-python`，Python 导入包为 `agilex_sdk_python`。命令入口：`agilex-sdk-python`、`agilex-sdk-python-server`（兼容短命令 `ag`、`ag-gello-server`）。
 
 `agilex-sdk-python` 是面向 AgileX PiPER-X 机械臂的 Python 控制项目，提供 SocketCAN 通信、状态读取、基础运动与夹爪控制，以及供 GELLO 遥操作程序调用的 ZMQ 服务。项目提供两个命令入口：`agilex-sdk-python` 用于机械臂调试和控制，`agilex-sdk-python-server` 用于启动跟随 GELLO 控制服务。
@@ -46,7 +48,7 @@ git clone https://github.com/KnightOrNot/agilex-sdk-python.git
 cd agilex-sdk-python
 ```
 
-### 3. 安装 pyenv、uv 和项目依赖
+### 3. 安装 uv 和项目依赖
 
 如果系统尚未安装 uv，可使用官方安装脚本：
 
@@ -61,17 +63,14 @@ source "$HOME/.local/bin/env"
 uv --version
 ```
 
-Python 由 pyenv 安装和选择，uv 只负责创建 `.venv`、同步 `uv.lock` 和运行命令。若尚未安装 pyenv，请先按[pyenv 官方说明](https://github.com/pyenv/pyenv#installation)完成安装。项目的 `.python-version` 声明 Python 3.12；解析并安装当前 pyenv 支持的最新 3.12 补丁版本：
+Python、`.venv`、锁文件和命令统一由 uv 管理。`.python-version` 声明 Python 3.12：
 
 ```bash
-requested_version="$(<.python-version)"
-resolved_version="$(pyenv latest -k "$requested_version")"
-pyenv install -s "$resolved_version"
-interpreter="$(PYENV_VERSION="$resolved_version" pyenv which python)"
-UV_NO_MANAGED_PYTHON=1 uv sync --frozen --python "$interpreter"
+uv python install 3.12
+uv sync --frozen
 ```
 
-显式的 `--python` 和 `UV_NO_MANAGED_PYTHON=1` 可以防止 uv 自行下载另一套 Python。通常不需要手动激活虚拟环境；后续使用 `uv run ...` 时，uv 会自动使用当前项目的 `.venv`。如需在编辑器或终端中显式激活，可执行：
+uv 按 `.python-version` 安装和选择 Python。通常不需要手动激活虚拟环境；后续使用 `uv run ...` 时，uv 会自动使用当前项目的 `.venv`。如需在编辑器或终端中显式激活，可执行：
 
 ```bash
 source .venv/bin/activate
