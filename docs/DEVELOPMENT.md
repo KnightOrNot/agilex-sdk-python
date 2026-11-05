@@ -6,7 +6,7 @@
 
 ## （1）项目基本信息
 
-项目使用 Python 3.11 及以上版本，采用 pyenv 安装和选择 Python，采用 uv 创建 `.venv`、管理依赖和运行命令，并使用标准的 `src layout` 组织 Python 包。机械臂通信基于 `pyAgxArm` 和 SocketCAN；GELLO 跟随服务使用 NumPy 处理七维状态，并通过 ZeroMQ 在两个进程之间传输请求和反馈。
+项目使用 Python 3.12 及以上版本，采用 pyenv 安装和选择 Python，采用 uv 创建 `.venv`、管理依赖和运行命令，并使用标准的 `src layout` 组织 Python 包。机械臂通信基于 `pyAgxArm` 和 SocketCAN；GELLO 跟随服务使用 NumPy 处理七维状态，并通过 ZeroMQ 在两个进程之间传输请求和反馈。
 
 ### 1. 命令入口
 

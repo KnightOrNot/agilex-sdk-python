@@ -13,7 +13,7 @@
 ## （1）环境要求
 
 - Ubuntu 或其他支持 SocketCAN 的 Linux 系统
-- Python 3.11 或更高版本（当前项目使用 `.python-version` 固定为 3.11）
+- Python 3.12 或更高版本（当前项目使用 `.python-version` 固定为 3.12）
 - [Git](https://git-scm.com/) & [uv](https://docs.astral.sh/uv/getting-started/installation/)
 - `iproute2` 提供的 `ip` 命令
 - PiPER-X 机械臂、兼容的 USB-CAN 适配器和正确的 CAN 总线终端电阻
@@ -61,7 +61,7 @@ source "$HOME/.local/bin/env"
 uv --version
 ```
 
-Python 由 pyenv 安装和选择，uv 只负责创建 `.venv`、同步 `uv.lock` 和运行命令。若尚未安装 pyenv，请先按[pyenv 官方说明](https://github.com/pyenv/pyenv#installation)完成安装。项目的 `.python-version` 声明 Python 3.11；解析并安装当前 pyenv 支持的最新 3.11 补丁版本：
+Python 由 pyenv 安装和选择，uv 只负责创建 `.venv`、同步 `uv.lock` 和运行命令。若尚未安装 pyenv，请先按[pyenv 官方说明](https://github.com/pyenv/pyenv#installation)完成安装。项目的 `.python-version` 声明 Python 3.12；解析并安装当前 pyenv 支持的最新 3.12 补丁版本：
 
 ```bash
 requested_version="$(<.python-version)"
